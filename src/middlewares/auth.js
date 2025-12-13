@@ -1,6 +1,6 @@
 const adminAuth = (req,res,next)=>{
     const token = "xyz";
-    const isAdminAuthenticated = token === "xyzd";
+    const isAdminAuthenticated = token === "xyz";
     console.log("admin is getting checked");
     
     if(isAdminAuthenticated){
