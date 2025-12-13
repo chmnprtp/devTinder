@@ -378,5 +378,27 @@ app.get("/user",(err,req,res,next)=>{
 
 TO connect server to database we use library mongoose.
 
-~
+databse.js
+    const mongoose = require("mongoose")
 
+    const coonectDB = async() =>{
+        await mongoose.connect("mongodb+srv://chmnprtp:chmnprtp@namastenode.qzipaix.mongodb.net/");
+    }
+
+    module.exports = coonectDB;
+
+
+app.js
+    const express = require("express");
+    const connectDB = require("./config/database")
+    const app = express();
+
+    connectDB().then(()=>{
+        console.log("Database established");
+        app.listen(7777,()=>{
+            console.log("Server is running");
+        })
+    }).catch(()=>{
+        console.log("Database not connected");
+    })
+-------------------------------------------------------------------------
