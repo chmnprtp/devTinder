@@ -1,3 +1,10 @@
+
+git add .  
+git commit -m "database connected"
+git push
+
+
+
 // Routing and request handlers
 
 // if you use below code above all the no other router we can request. it overrides everything. this means any routes 
@@ -402,3 +409,138 @@ app.js
         console.log("Database not connected");
     })
 -------------------------------------------------------------------------
+
+What is Schema? it is kind of definition to create model
+What is Model?
+
+How to create Schema?
+    require mongoose
+    const schema = new mongoose.Schema({firstName:{type:String}})
+    create mongoose Model - const model = mongoose.model("name",Schema);  // mongoose name always start with capital letter
+    export model;
+
+user.js
+    const mongoose = require("mongoose");
+    const userSchema = mongoose.Schema({
+        firstName:{
+            type:String,
+        },
+        lastName:{
+            type:String,
+        },
+        age:{
+            type:Number,
+        },
+        gender:{
+            type:String,
+        },
+        emailId:{
+            type:String,
+        },
+        password:{
+            type:String,
+        },
+    })
+
+    const UserModel = mongoose.model("User",userSchema);
+    module.exports = UserModel;
+
+    -------------------------------------------------------------------------
+Creating API's
+use method to create api
+store data 
+save it using save()
+send response back
+
+mostly every mongoose function return promises so use async await
+
+app.js
+    app.post("/signup", async (req,res)=>{
+        const user = new UserModel({
+            firstName:"Chaman",
+            lastName:"Pratap",
+            age:24,
+            emailId:"chmnprtp@gmail.com",
+            password:"aA1$aA1$"
+        }
+    )
+        try {
+            await user.save();
+            res.send("User added")
+        } catch (error) {
+            res.status(400).send("User not added");
+        }
+    })
+
+// To share data dynamic
+    app.post("/signup", async (req,res)=>{
+        const user = new User(req.body);
+        try {
+            await user.save();
+            res.send("User added")
+        } catch (error) {
+            res.status(400).send("User not added");
+        }
+    })
+
+automatically created by mongodb:-
+__id:? unique object - we can manually send this
+__v:? version of document - when we update the document it automatially changes
+
+
+JSON vs OBJECT?
+In Json both key and value in ""
+in last of JSON don't put ,
+
+You can see the data send by user in req.body but that comes in JSON format to view need middleware - express.json()
+
+// How to get data from database
+using model
+
+User.find({userId:userid}) - for single user
+User.find({}) - for all user
+
+find() vs finOne ?
+put vs patch ?
+
+If you are try to update an field which are not present it will not add it in database.
+
+
+
+
+
+=============================================================
+
+============================== Data Sanitization & Schema Validation=================
+
+Some validations
+required:true,
+unique:true,
+default:"sfgs",
+lowercase:"true",
+trim:true,
+minLength:4,
+min:18,
+
+Custom validation:-
+validate(value){  // this will only work when new document is created enable for existing document 
+    if(!["male","female","others"].includes(value)){
+        throw new Error("Gender not valid")
+    }
+}
+
+{runValidators:true} for update existing document with validation check in moongoose method
+
+{timestamps:true} in schema
+
+
+VALIDATOR LIBRARY -- db level validation
+
+
+=================================================================================================
+================================Encrypting Password==============================================
+
+Password should be store in hash format
+install bcrypt library - npm install bcrypt
+
+it create hash using salt - by default salt round is 10
