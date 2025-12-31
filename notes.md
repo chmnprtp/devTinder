@@ -544,3 +544,72 @@ Password should be store in hash format
 install bcrypt library - npm install bcrypt
 
 it create hash using salt - by default salt round is 10
+
+app.js
+app.post("/signup", async (req,res)=>{
+    try {
+          // validation of data
+        validateSignupData(req);
+          // encrypted password
+
+        const {firstName,lastName,emailId,password} = req.body;
+        const passwordHash = await bcrypt.hash(password, 10);
+          // creating instance of user model
+
+        const user = new User({firstName,lastName,emailId,password:passwordHash});
+        await user.save();
+        res.send("User added successfully");
+    } catch (error) {
+        res.status(400).send("User not added "+error.message);
+    }
+})
+
+app.post("/login",async(req,res)=>{
+    try {
+        const {emailId,password} = req.body;
+
+        const user = await User.findOne({emailId:emailId});
+        if(!user){
+            throw new Error("Invalid credentials");
+        }
+        
+        const isPasswordValid = bcrypt.compare(password,user.password)
+        if(isPasswordValid){
+
+            // create a JWT token
+
+            //add the token to cookie and send the response back to user
+            res.send("Login Successfull")
+        }
+        else{
+            throw new Error("Invalid credentials")
+        }
+
+    } catch (error) {
+        res.status(400).send("some error "+ error.message)
+    }
+    
+})
+
+=================================================================================================
+================================JWT Cookies==============================================
+
+jwt created by server and stored by user. every time any request is made jwt will also be send along.
+every time server validate these token.
+jwt stored in cookies
+
+Ex - when you successful login server send success response and jwt inside cookies
+
+we can also set expiration date of cookies and token
+ you can set cookie like res.cookie()
+ you can check cookies = req.cookie; it will give undedined 
+ to read the cookie we need cookie-parser library middleware - app.use(cookieParser())
+
+ jwt - red - header
+       pink - payload
+       blue - signature
+
+npm i jsonwebtoken
+const jwt = require("jsonwebtoken");
+const token = await jwt.sign(privatekey) //pass hiding info and secret key
+jwt.verify(token,privatekey)

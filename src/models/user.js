@@ -11,12 +11,10 @@ const userSchema = mongoose.Schema({
     },
     age:{
         type:Number,
-         required:true,
          min:18,
     },
     gender:{
         type:String,
-        required:true,
         validate(value){
             if(!["female","male","others"]){
                 throw new Error("invalid gender");
@@ -48,6 +46,7 @@ const userSchema = mongoose.Schema({
     },
     photoUrl:{
         type:String,
+        default:"https://www.vecteezy.com/free-vector/default-profile-picture",
         validate(value){
             if(!validator.isURL(value)){
                 throw new Error("Not valid URL");

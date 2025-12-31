@@ -1,27 +1,77 @@
 const express = require("express");
 const connectDB = require("./config/database")
 const User = require("./models/user")
-const app = express();
+const validateSignupData = require("./utils/validation")
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
-app.use(express.json())
+const app = express();
+app.use(express.json()) // to convert json to object in node
+app.use(cookieParser())
 
 app.post("/signup", async (req,res)=>{
-    
-  
-
     try {
           // validation of data
+        validateSignupData(req);
           // encrypted password
-          // creating instance of user model
 
-        const user = new User(req.body);
+        const {firstName,lastName,emailId,password} = req.body;
+        const passwordHash = await bcrypt.hash(password, 10);
+          
+          // creating instance of user model
+        const user = new User({firstName,lastName,emailId,password:passwordHash});
         await user.save();
         res.send("User added successfully");
     } catch (error) {
-        res.status(400).send("User not added" +error.message);
+        res.status(400).send("User not added "+error.message);
     }
 })
 
+app.post("/login",async(req,res)=>{
+    try {
+        const {emailId,password} = req.body;
+
+        const user = await User.findOne({emailId:emailId});
+        if(!user){
+            throw new Error("Invalid credentials");
+        }
+        
+        const isPasswordValid = bcrypt.compare(password,user.password)
+        if(isPasswordValid){
+
+            // create a JWT token
+            const token = await jwt.sign({_id:user._id},"key123")
+
+            //add the token to cookie and send the response back to user
+            res.cookie("token",token);
+            res.send("Login Successfull")
+        }
+        else{
+            throw new Error("Invalid credentials")
+        }
+
+    } catch (error) {
+        res.status(400).send("some error "+ error.message)
+    }
+    
+})
+
+app.get("/profile", async(req,res)=>{
+
+    const cookies = req.cookies; 
+    const {token} = cookies // getting token from cookies
+
+    //validate my token
+    const decodedMessage = jwt.verify(token,"key123");
+    const {_id} = decodedMessage;
+    console.log("Logged in user",_id);
+    
+    console.log(decodedMessage)
+    res.send("Reading cookie");
+})
+
+// get user by email
 app.get("/user", async(req,res)=>{
     const email = req.body.emailId
 
