@@ -613,3 +613,23 @@ npm i jsonwebtoken
 const jwt = require("jsonwebtoken");
 const token = await jwt.sign(privatekey) //pass hiding info and secret key
 jwt.verify(token,privatekey)
+
+{expiresIn} - in jwt
+{expires()}  - in cookie
+
+
+
+MOONGOOSE SCHEMA METHOD-----
+// arrow function will not work here
+
+user.js
+userSchema.methods.getJWT = async function(){
+    conset user = this
+
+    const token = await jwt.sign({_id:user._id},"key123",{ expiresIn: '1d' })
+
+    return token;
+}
+
+app.js
+const token = await user.getJWT();

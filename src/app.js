@@ -5,6 +5,7 @@ const validateSignupData = require("./utils/validation")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const {userAuth} = require("./middlewares/userAuth")
 
 const app = express();
 app.use(express.json()) // to convert json to object in node
@@ -37,12 +38,11 @@ app.post("/login",async(req,res)=>{
             throw new Error("Invalid credentials");
         }
         
-        const isPasswordValid = bcrypt.compare(password,user.password)
+        const isPasswordValid = await user.validatePassword(password);
         if(isPasswordValid){
 
             // create a JWT token
-            const token = await jwt.sign({_id:user._id},"key123")
-
+            const token = await user.getJWT();
             //add the token to cookie and send the response back to user
             res.cookie("token",token);
             res.send("Login Successfull")
@@ -57,18 +57,23 @@ app.post("/login",async(req,res)=>{
     
 })
 
-app.get("/profile", async(req,res)=>{
+app.get("/profile",userAuth, async(req,res)=>{
 
-    const cookies = req.cookies; 
-    const {token} = cookies // getting token from cookies
+  try {
+   res.send(req.user);
+  } catch (error) {
+    res.status(400).send("Error" + error.message)
+  }
+})
 
-    //validate my token
-    const decodedMessage = jwt.verify(token,"key123");
-    const {_id} = decodedMessage;
-    console.log("Logged in user",_id);
-    
-    console.log(decodedMessage)
-    res.send("Reading cookie");
+app.post("/sendConnectionRequest",userAuth,async(req,res)=>{
+    try {
+        const user = req.user
+         
+    res.send(user.firstName+ " Sent connection request")
+    } catch (error) {
+        res.status(400).send("Error "+error.message);
+    }
 })
 
 // get user by email
